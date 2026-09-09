@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Activity 1.1: Communication, Speech, and Language</title>
+<style>
+  :root{
+    --navy:#333951;
+    --lagoon:#007D8B;
+    --gold:#F8DA54;
+    --bluegray:#586373;
+    --storm:#F6F6F4;
+    --gray:#E8E9EB;
+    --white:#FFFFFF;
+    --success:#2E7D32;
+    --success-bg:#E7F3E8;
+    --error:#B3261E;
+    --error-bg:#FBEAE9;
+    --shape-red:#D7263D;
+    --shape-yellow:#F8DA54;
+    --shape-pink:#FD6375;
+    --shape-green:#2E8B57;
+    --radius:12px;
+    --shadow:0 2px 8px rgba(51,57,81,0.12);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:"Segoe UI",Arial,sans-serif;
+    background:var(--storm);
+    color:var(--navy);
+    line-height:1.5;
+  }
+  .app{
+    max-width:760px;
+    margin:0 auto;
+    background:var(--white);
+    display:flex;
+    flex-direction:column;
+  }
+  header{
+    background:var(--navy);
+    color:var(--white);
+    padding:18px 24px 14px;
+  }
+  header h1{
+    margin:0 0 4px;
+    font-size:1.25rem;
+    font-weight:700;
+  }
+  header p{
+    margin:0;
+    font-size:0.9rem;
+    color:var(--gray);
+  }
+  .progress{
+    display:flex;
+    justify-content:space-between;
+    padding:14px 20px 10px;
+    background:var(--white);
+    border-bottom:1px solid var(--gray);
+    gap:4px;
+  }
+  .progress-step{
+    flex:1;
+    text-align:center;
+    font-size:0.68rem;
+    color:var(--bluegray);
+    position:relative;
+  }
+  .progress-step .dot{
+    width:22px;
+    height:22px;
+    border-radius:50%;
+    background:var(--gray);
+    color:var(--navy);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    margin:0 auto 4px;
+    font-weight:700;
+    font-size:0.75rem;
+    border:2px solid var(--gray);
+  }
+  .progress-step.active .dot{
+    background:var(--gold);
+    border-color:var(--gold);
+  }
+  .progress-step.done .dot{
+    background:var(--lagoon);
+    border-color:var(--lagoon);
+    color:var(--white);
+  }
+  main{
+    padding:20px 24px 32px;
+  }
+  .step{display:none;}
+  .step.active{display:block;}
+  h2{
+    color:var(--navy);
+    font-size:1.15rem;
+    margin-top:0;
+  }
+  .intro-text{color:var(--bluegray); font-size:0.95rem;}
+  .term-card{
+    border:1px solid var(--gray);
+    border-radius:var(--radius);
+    padding:14px 16px;
+    margin-bottom:14px;
+    background:var(--white);
+    box-shadow:var(--shadow);
+  }
+  .term-card h3{
+    margin:0 0 6px;
+    color:var(--lagoon);
+    font-size:1.05rem;
+  }
+  .term-card p{margin:0 0 6px; font-size:0.95rem;}
+  .term-card ul{margin:6px 0 0 20px; padding:0; font-size:0.92rem;}
+  .term-card ul li{margin-bottom:3px;}
+  .term-card.communication{border-left:5px solid var(--lagoon);}
+  .term-card.speech{border-left:5px solid var(--gold);}
+  .term-card.language{border-left:5px solid var(--bluegray);}
+
+  /* Drag and drop */
+  .match-wrap{display:flex; flex-direction:column; gap:18px; margin-top:16px;}
+  .drop-zones{display:flex; flex-direction:column; gap:12px;}
+  .drop-zone{
+    border:2px dashed var(--bluegray);
+    border-radius:var(--radius);
+    min-height:64px;
+    padding:10px 14px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    background:var(--storm);
+  }
+  .drop-zone .zone-label{
+    font-weight:700;
+    color:var(--navy);
+    min-width:110px;
+    flex-shrink:0;
+  }
+  .drop-zone .zone-slot{
+    flex:1;
+    min-height:40px;
+    display:flex;
+    align-items:center;
+  }
+  .drop-zone.correct{border-color:var(--success); background:var(--success-bg);}
+  .drop-zone.incorrect{border-color:var(--error); background:var(--error-bg);}
+  .drop-zone.dragover{border-color:var(--lagoon);}
+  .tray{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+  }
+  .def-tile{
+    border:2px solid var(--lagoon);
+    background:var(--white);
+    color:var(--navy);
+    border-radius:10px;
+    padding:10px 12px;
+    font-size:0.9rem;
+    cursor:pointer;
+    max-width:100%;
+    box-shadow:var(--shadow);
+  }
+  .def-tile[aria-pressed="true"]{
+    background:var(--gold);
+    border-color:var(--gold);
+  }
+  .def-tile:focus-visible, button:focus-visible, .shape-btn:focus-visible{
+    outline:3px solid var(--lagoon);
+    outline-offset:2px;
+  }
+  .def-tile.placed{
+    width:100%;
+    cursor:pointer;
+  }
+
+  /* Shape task */
+  .instruction-box{
+    background:var(--storm);
+    border:1px solid var(--gray);
+    border-radius:var(--radius);
+    padding:16px;
+    margin-bottom:18px;
+  }
+  .instruction-text{
+    font-size:1.15rem;
+    font-weight:700;
+    color:var(--navy);
+    margin:0 0 10px;
+  }
+  .speak-btn{
+    background:var(--lagoon);
+    color:var(--white);
+    border:none;
+    border-radius:8px;
+    padding:8px 14px;
+    font-size:0.9rem;
+    cursor:pointer;
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+  }
+  .speak-btn:hover{background:var(--navy);}
+  .shape-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:14px;
+    margin-top:18px;
+  }
+  .shape-btn{
+    border:2px solid var(--gray);
+    background:var(--white);
+    border-radius:var(--radius);
+    padding:18px 8px;
+    cursor:pointer;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:8px;
+    box-shadow:var(--shadow);
+  }
+  .shape-btn:hover{border-color:var(--lagoon);}
+  .shape-btn svg{width:56px; height:56px;}
+  .shape-btn span{font-size:0.85rem; color:var(--bluegray);}
+  .feedback{
+    margin-top:14px;
+    padding:10px 14px;
+    border-radius:8px;
+    font-size:0.92rem;
+    display:none;
+  }
+  .feedback.show{display:block;}
+  .feedback.correct{background:var(--success-bg); color:var(--success); font-weight:600;}
+  .feedback.incorrect{background:var(--error-bg); color:var(--error); font-weight:600;}
+  .feedback.neutral{background:var(--gray); color:var(--navy);}
+
+  .lang-ja{font-size:1.3rem;}
+
+  /* Reflection */
+  .choice-row{display:flex; gap:12px; margin:14px 0;}
+  .choice-btn{
+    flex:1;
+    padding:10px;
+    border-radius:8px;
+    border:2px solid var(--lagoon);
+    background:var(--white);
+    color:var(--lagoon);
+    font-weight:700;
+    cursor:pointer;
+  }
+  .choice-btn.selected{background:var(--lagoon); color:var(--white);}
+  .reveal-box{
+    display:none;
+    background:var(--storm);
+    border-left:5px solid var(--gold);
+    border-radius:var(--radius);
+    padding:16px;
+    margin-top:16px;
+    font-size:0.97rem;
+  }
+  .reveal-box.show{display:block;}
+  .answer-note{
+    margin-top:10px;
+    font-size:0.85rem;
+    color:var(--bluegray);
+  }
+
+  /* Discussion */
+  .prompt-box{
+    background:var(--storm);
+    border-radius:var(--radius);
+    padding:14px 16px;
+    margin-bottom:14px;
+    font-size:0.92rem;
+  }
+  .prompt-box ol{margin:6px 0 0 20px; padding:0;}
+  textarea{
+    width:100%;
+    min-height:140px;
+    border:1px solid var(--bluegray);
+    border-radius:8px;
+    padding:12px;
+    font-size:0.95rem;
+    font-family:inherit;
+    resize:vertical;
+  }
+  .copy-row{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    margin-top:10px;
+  }
+  .copy-btn{
+    background:var(--gold);
+    color:var(--navy);
+    border:none;
+    border-radius:8px;
+    padding:10px 18px;
+    font-weight:700;
+    cursor:pointer;
+  }
+  .copy-btn:hover{background:#e9c934;}
+  .copy-status{font-size:0.88rem; color:var(--success); font-weight:600;}
+
+  .nav-bar{
+    background:var(--white);
+    border-bottom:1px solid var(--gray);
+    padding:12px 24px;
+    display:flex;
+    justify-content:space-between;
+  }
+  .nav-btn{
+    padding:10px 20px;
+    border-radius:8px;
+    border:none;
+    font-weight:700;
+    cursor:pointer;
+    font-size:0.95rem;
+  }
+  .nav-btn.back{background:var(--gray); color:var(--navy);}
+  .nav-btn.next{background:var(--lagoon); color:var(--white);}
+  .nav-btn:disabled{opacity:0.4; cursor:not-allowed;}
+  .visually-hidden{
+    position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0,0,0,0);
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <h1>Activity 1.1: Communication, Speech, and Language</h1>
+    <p>Fast Fact #1: AAC will not hinder speech production</p>
+  </header>
+
+  <div class="progress" id="progressBar" aria-hidden="true"></div>
+
+  <div class="nav-bar">
+    <button class="nav-btn back" id="backBtn" type="button">Back</button>
+    <button class="nav-btn next" id="nextBtn" type="button">Next</button>
+  </div>
+
+  <main>
+    <!-- STEP 1: Definitions -->
+    <section class="step active" id="step-1" aria-labelledby="step1-heading">
+      <h2 id="step1-heading">What's the difference?</h2>
+      <p class="intro-text">Before we dive in, let's define three terms that are easy to mix up.</p>
+
+      <div class="term-card communication">
+        <h3>Communication</h3>
+        <p>Communication is the active process of sharing information and ideas. Communication involves both understanding and expression.</p>
+      </div>
+
+      <div class="term-card speech">
+        <h3>Speech</h3>
+        <p>Speech is one form of communication. It is how we say sounds and use our voices.</p>
+      </div>
+
+      <div class="term-card language">
+        <h3>Language</h3>
+        <p>Language refers to the words we use and the rules that tell us how to use them. Language includes:</p>
+        <ul>
+          <li>What words mean</li>
+          <li>How to make new words (friend, friendly, unfriendly)</li>
+          <li>How to put words together</li>
+          <li>How we use words socially</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- STEP 2: Drag and drop matching -->
+    <section class="step" id="step-2" aria-labelledby="step2-heading">
+      <h2 id="step2-heading">Match each definition</h2>
+      <p class="intro-text">Tap a definition below, then tap the term it matches. (You can also drag it if you'd rather.)</p>
+
+      <div class="match-wrap">
+        <div class="drop-zones" id="dropZones">
+          <div class="drop-zone" data-term="communication">
+            <span class="zone-label">Communication</span>
+            <div class="zone-slot" data-slot="communication"></div>
+          </div>
+          <div class="drop-zone" data-term="speech">
+            <span class="zone-label">Speech</span>
+            <div class="zone-slot" data-slot="speech"></div>
+          </div>
+          <div class="drop-zone" data-term="language">
+            <span class="zone-label">Language</span>
+            <div class="zone-slot" data-slot="language"></div>
+          </div>
+        </div>
+        <div class="tray" id="defTray" role="group" aria-label="Definitions to match"></div>
+      </div>
+      <div class="feedback" id="matchFeedback" role="status" aria-live="polite"></div>
+    </section>
+
+    <!-- STEP 3: English click task -->
+    <section class="step" id="step-3" aria-labelledby="step3-heading">
+      <h2 id="step3-heading">Try it: Speech + Language together</h2>
+      <div class="instruction-box">
+        <p class="instruction-text" id="enInstruction">Click on the green triangle.</p>
+        <button class="speak-btn" id="enSpeakBtn" type="button">🔊 Read instructions aloud</button>
+      </div>
+      <div class="shape-grid" id="enShapeGrid"></div>
+      <div class="feedback" id="enFeedback" role="status" aria-live="polite"></div>
+    </section>
+
+    <!-- STEP 4: Japanese click task -->
+    <section class="step" id="step-4" aria-labelledby="step4-heading">
+      <h2 id="step4-heading">Try it again</h2>
+      <div class="instruction-box">
+        <p class="instruction-text lang-ja" lang="ja" id="jaInstruction">ピンクのハートをクリックしてください</p>
+        <button class="speak-btn" id="jaSpeakBtn" type="button">🔊 音声を再生 (Play audio)</button>
+      </div>
+      <div class="shape-grid" id="jaShapeGrid"></div>
+      <div class="feedback show neutral" id="jaFeedback" role="status" aria-live="polite">Choose one of the four shapes above.</div>
+    </section>
+
+    <!-- STEP 5: Reflection -->
+    <section class="step" id="step-5" aria-labelledby="step5-heading">
+      <h2 id="step5-heading">Reflect</h2>
+      <p>Were you able to answer the previous question correctly?</p>
+      <div class="choice-row" id="reflectChoices">
+        <button class="choice-btn" data-choice="yes" type="button">Yes</button>
+        <button class="choice-btn" data-choice="no" type="button">No</button>
+      </div>
+      <div class="reveal-box" id="reflectReveal">
+        <p>Even though the instructions were read aloud, you were probably unable to complete the activity. You could hear the words clearly, but unless you understand Japanese, the meaning of those words was inaccessible because you do not have the necessary <strong>language</strong> skills.</p>
+        <p class="answer-note" id="answerNote"></p>
+      </div>
+    </section>
+
+    <!-- STEP 6: Discussion -->
+    <section class="step" id="step-6" aria-labelledby="step6-heading">
+      <h2 id="step6-heading">Discussion response</h2>
+      <div class="prompt-box">
+        <p>Before you post in the discussion, write a response to these two prompts:</p>
+        <ol>
+          <li>In this activity, you could hear speech clearly but couldn't understand it without the underlying language. How does this connect to why giving a student an AAC system does not prevent them from developing spoken language?</li>
+          <li>What's one thing you'll remember from this activity the next time you talk with a family member or colleague who worries AAC will "replace" speech?</li>
+        </ol>
+      </div>
+      <label for="discussionText" class="visually-hidden">Your discussion response</label>
+      <textarea id="discussionText" placeholder="Type your response here..."></textarea>
+      <div class="copy-row">
+        <button class="copy-btn" id="copyBtn" type="button">Copy my response</button>
+        <span class="copy-status" id="copyStatus" role="status" aria-live="polite"></span>
+      </div>
+      <p class="intro-text" style="margin-top:14px;">Paste your response in the Canvas discussion page.</p>
+    </section>
+  </main>
+</div>
+
+<script>
+(function(){
+  var TOTAL_STEPS = 6;
+  var currentStep = 1;
+  var stepLabels = ["Learn","Match","Try It","Try It Again","Reflect","Discuss"];
+  var stepComplete = {1:true,2:false,3:false,4:false,5:false,6:true};
+
+  var progressBar = document.getElementById('progressBar');
+  stepLabels.forEach(function(label, i){
+    var num = i+1;
+    var el = document.createElement('div');
+    el.className = 'progress-step';
+    el.id = 'progress-' + num;
+    el.innerHTML = '<div class="dot">'+num+'</div><div>'+label+'</div>';
+    progressBar.appendChild(el);
+  });
+
+  function renderProgress(){
+    for(var i=1;i<=TOTAL_STEPS;i++){
+      var el = document.getElementById('progress-'+i);
+      el.classList.remove('active','done');
+      if(i === currentStep) el.classList.add('active');
+      else if(i < currentStep) el.classList.add('done');
+    }
+  }
+
+  function showStep(n){
+    for(var i=1;i<=TOTAL_STEPS;i++){
+      document.getElementById('step-'+i).classList.remove('active');
+    }
+    document.getElementById('step-'+n).classList.add('active');
+    currentStep = n;
+    renderProgress();
+    document.getElementById('backBtn').disabled = (n === 1);
+    var nextBtn = document.getElementById('nextBtn');
+    nextBtn.textContent = (n === TOTAL_STEPS) ? 'Done' : 'Next';
+    nextBtn.disabled = !stepComplete[n];
+    window.scrollTo(0,0);
+    try{ localStorage.setItem('aac11_step', n); }catch(e){}
+  }
+
+  document.getElementById('backBtn').addEventListener('click', function(){
+    if(currentStep > 1) showStep(currentStep - 1);
+  });
+  document.getElementById('nextBtn').addEventListener('click', function(){
+    if(currentStep < TOTAL_STEPS) showStep(currentStep + 1);
+  });
+
+  function markComplete(step){
+    stepComplete[step] = true;
+    if(currentStep === step) document.getElementById('nextBtn').disabled = false;
+  }
+
+  /* ---------- Text to speech ---------- */
+  function speak(text, lang){
+    if(!('speechSynthesis' in window)){
+      alert('Sorry, text-to-speech is not supported in this browser.');
+      return;
+    }
+    window.speechSynthesis.cancel();
+    var utter = new SpeechSynthesisUtterance(text);
+    utter.lang = lang;
+    utter.rate = 0.95;
+    window.speechSynthesis.speak(utter);
+  }
+  document.getElementById('enSpeakBtn').addEventListener('click', function(){
+    speak(document.getElementById('enInstruction').textContent, 'en-US');
+  });
+  document.getElementById('jaSpeakBtn').addEventListener('click', function(){
+    speak(document.getElementById('jaInstruction').textContent, 'ja-JP');
+  });
+
+  /* ---------- Step 2: drag & drop / click matching ---------- */
+  var definitions = [
+    {id:'communication', text:'The active process of sharing information and ideas. Involves both understanding and expression.'},
+    {id:'speech', text:'How we say sounds and use our voices — one form of communication.'},
+    {id:'language', text:'The words we use, and the rules that tell us how to use them.'}
+  ];
+  var shuffledDefs = definitions.slice().sort(function(){return Math.random()-0.5;});
+  var tray = document.getElementById('defTray');
+  var selectedTile = null;
+  var placedCount = 0;
+
+  function makeTile(def){
+    var tile = document.createElement('div');
+    tile.className = 'def-tile';
+    tile.textContent = def.text;
+    tile.dataset.defId = def.id;
+    tile.tabIndex = 0;
+    tile.setAttribute('role','button');
+    tile.setAttribute('aria-pressed','false');
+    tile.draggable = true;
+    tile.addEventListener('click', function(){ selectTile(tile); });
+    tile.addEventListener('keydown', function(e){
+      if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); selectTile(tile); }
+    });
+    tile.addEventListener('dragstart', function(e){
+      e.dataTransfer.setData('text/plain', def.id);
+    });
+    return tile;
+  }
+  shuffledDefs.forEach(function(def){ tray.appendChild(makeTile(def)); });
+
+  function selectTile(tile){
+    if(selectedTile){ selectedTile.setAttribute('aria-pressed','false'); }
+    if(selectedTile === tile){ selectedTile = null; return; }
+    selectedTile = tile;
+    tile.setAttribute('aria-pressed','true');
+  }
+
+  var zones = document.querySelectorAll('.drop-zone');
+  zones.forEach(function(zone){
+    var slot = zone.querySelector('.zone-slot');
+    zone.addEventListener('click', function(){
+      if(slot.children.length > 0) return;
+      if(selectedTile) placeTile(selectedTile, zone);
+    });
+    zone.addEventListener('dragover', function(e){
+      e.preventDefault();
+      zone.classList.add('dragover');
+    });
+    zone.addEventListener('dragleave', function(){ zone.classList.remove('dragover'); });
+    zone.addEventListener('drop', function(e){
+      e.preventDefault();
+      zone.classList.remove('dragover');
+      if(slot.children.length > 0) return;
+      var defId = e.dataTransfer.getData('text/plain');
+      var draggedTile = tray.querySelector('[data-def-id="'+defId+'"]');
+      if(draggedTile) placeTile(draggedTile, zone);
+    });
+  });
+
+  function placeTile(tile, zone){
+    var slot = zone.querySelector('.zone-slot');
+    var isCorrect = tile.dataset.defId === zone.dataset.term;
+    if(isCorrect){
+      slot.appendChild(tile);
+      tile.classList.add('placed');
+      tile.setAttribute('aria-pressed','false');
+      tile.draggable = false;
+      zone.classList.add('correct');
+      selectedTile = null;
+      placedCount++;
+      var fb = document.getElementById('matchFeedback');
+      fb.className = 'feedback show correct';
+      fb.textContent = 'Correct! ' + placedCount + ' of 3 matched.';
+      if(placedCount === 3){
+        fb.textContent = 'All matched correctly! Great work.';
+        markComplete(2);
+      }
+    } else {
+      zone.classList.add('incorrect');
+      selectedTile = null;
+      tile.setAttribute('aria-pressed','false');
+      var fb2 = document.getElementById('matchFeedback');
+      fb2.className = 'feedback show incorrect';
+      fb2.textContent = 'Not quite — try again.';
+      setTimeout(function(){ zone.classList.remove('incorrect'); }, 700);
+    }
+  }
+
+  /* ---------- Steps 3 & 4: shape click tasks ---------- */
+  var shapeDefs = {
+    circle: {label:'red circle', color:'var(--shape-red)'},
+    square: {label:'yellow square', color:'var(--shape-yellow)'},
+    heart:  {label:'pink heart', color:'var(--shape-pink)'},
+    triangle: {label:'green triangle', color:'var(--shape-green)'}
+  };
+  function shapeSVG(kind, color){
+    if(kind === 'circle') return '<svg viewBox="0 0 60 60"><circle cx="30" cy="30" r="26" fill="'+color+'"/></svg>';
+    if(kind === 'square') return '<svg viewBox="0 0 60 60"><rect x="6" y="6" width="48" height="48" rx="6" fill="'+color+'"/></svg>';
+    if(kind === 'triangle') return '<svg viewBox="0 0 60 60"><polygon points="30,6 56,54 4,54" fill="'+color+'"/></svg>';
+    if(kind === 'heart') return '<svg viewBox="0 0 60 60"><path fill="'+color+'" d="M30 52 C10 38 4 26 12 16 C18 8 28 9 30 18 C32 9 42 8 48 16 C56 26 50 38 30 52 Z"/></svg>';
+  }
+  function shuffle(arr){ return arr.slice().sort(function(){return Math.random()-0.5;}); }
+
+  function buildShapeGrid(container, targetKind, onPick){
+    container.innerHTML = '';
+    var order = shuffle(Object.keys(shapeDefs));
+    order.forEach(function(kind){
+      var def = shapeDefs[kind];
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'shape-btn';
+      btn.setAttribute('aria-label', def.label);
+      btn.innerHTML = shapeSVG(kind, def.color) + '<span>' + def.label + '</span>';
+      btn.addEventListener('click', function(){ onPick(kind === targetKind, kind); });
+      container.appendChild(btn);
+    });
+  }
+
+  buildShapeGrid(document.getElementById('enShapeGrid'), 'triangle', function(isCorrect){
+    var fb = document.getElementById('enFeedback');
+    if(isCorrect){
+      fb.className = 'feedback show correct';
+      fb.textContent = 'Correct! You understood the instructions and knew what to do.';
+      markComplete(3);
+    } else {
+      fb.className = 'feedback show incorrect';
+      fb.textContent = 'Not quite — listen again and try another shape.';
+    }
+  });
+
+  var jaResult = null;
+  buildShapeGrid(document.getElementById('jaShapeGrid'), 'heart', function(isCorrect, kind){
+    jaResult = isCorrect;
+    var fb = document.getElementById('jaFeedback');
+    fb.className = 'feedback show neutral';
+    fb.textContent = "Okay — let's move on to reflect on this.";
+    markComplete(4);
+  });
+
+  /* ---------- Step 5: reflection ---------- */
+  var reflectBtns = document.querySelectorAll('#reflectChoices .choice-btn');
+  reflectBtns.forEach(function(btn){
+    btn.addEventListener('click', function(){
+      reflectBtns.forEach(function(b){ b.classList.remove('selected'); });
+      btn.classList.add('selected');
+      document.getElementById('reflectReveal').classList.add('show');
+      var note = document.getElementById('answerNote');
+      if(jaResult === true){
+        note.textContent = "For reference: you actually selected the correct shape (the pink heart) this time — nice guess, or perhaps you recognized a cognate or gesture! The broader point still holds for anyone who doesn't speak the language.";
+      } else if(jaResult === false){
+        note.textContent = 'For reference, the correct answer was the pink heart.';
+      } else {
+        note.textContent = 'For reference, the correct answer was the pink heart.';
+      }
+      markComplete(5);
+    });
+  });
+
+  /* ---------- Remember typed discussion response across reloads ---------- */
+  (function(){
+    var ta = document.getElementById('discussionText');
+    try{
+      var saved = localStorage.getItem('aac11_discussionText');
+      if(saved !== null) ta.value = saved;
+    }catch(e){}
+    ta.addEventListener('input', function(){
+      try{ localStorage.setItem('aac11_discussionText', ta.value); }catch(e){}
+    });
+  })();
+
+  /* ---------- Step 6: copy to clipboard ---------- */
+  document.getElementById('copyBtn').addEventListener('click', function(){
+    var text = document.getElementById('discussionText').value;
+    var status = document.getElementById('copyStatus');
+    function showCopied(){
+      status.textContent = 'Copied! Paste it into the Canvas discussion.';
+      setTimeout(function(){ status.textContent = ''; }, 4000);
+    }
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(showCopied).catch(function(){
+        fallbackCopy(text, showCopied);
+      });
+    } else {
+      fallbackCopy(text, showCopied);
+    }
+  });
+  function fallbackCopy(text, cb){
+    var ta = document.getElementById('discussionText');
+    ta.focus();
+    ta.select();
+    try{ document.execCommand('copy'); cb(); }
+    catch(e){ document.getElementById('copyStatus').textContent = 'Copy failed — please select the text and copy manually.'; }
+  }
+
+  renderProgress();
+  var savedStep = 1;
+  try{
+    var s = parseInt(localStorage.getItem('aac11_step'), 10);
+    if(s >= 1 && s <= TOTAL_STEPS) savedStep = s;
+  }catch(e){}
+  showStep(savedStep);
+})();
+</script>
+</body>
+</html>
