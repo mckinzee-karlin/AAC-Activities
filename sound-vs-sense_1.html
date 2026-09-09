@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sound vs. Sense</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,900;1,9..144,500&family=Source+Sans+3:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#333951;
+    --navy-deep:#242a3b;
+    --teal:#007d8b;
+    --teal-deep:#005c66;
+    --gold:#f8da54;
+    --bg:#f6f6f4;
+    --surface:#ffffff;
+    --tint-teal:#e4f1f2;
+    --tint-gold:#fef6e8;
+    --line:#dde2e2;
+    --muted:#586373;
+    --good:#1c7a4d;
+    --good-bg:#e7f5ee;
+    --focus:#005c66;
+  }
+  *{box-sizing:border-box;}
+  html,body{ margin:0; padding:0; }
+  body{
+    background:var(--bg);
+    color:var(--navy);
+    font-family:'Source Sans 3', Arial, sans-serif;
+    line-height:1.6;
+  }
+  ::selection{ background:var(--gold); color:var(--navy-deep); }
+  h1,h2,h3{ font-family:'Fraunces', Georgia, serif; text-wrap:balance; margin:0; }
+  a{ color:var(--teal-deep); }
+  button{ font-family:inherit; }
+  :focus-visible{ outline:3px solid var(--focus); outline-offset:2px; border-radius:4px; }
+  @media (prefers-reduced-motion: reduce){
+    *{ animation:none !important; transition:none !important; }
+  }
+
+  .wrap{ max-width:720px; margin:0 auto; padding:40px 20px 80px; }
+
+  .eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--teal-deep);
+    font-weight:600;
+    display:flex; align-items:center; gap:10px;
+  }
+  .eyebrow::before{
+    content:""; width:22px; height:2px; background:var(--gold); display:inline-block;
+  }
+
+  header.hero{ margin-bottom:8px; }
+  header.hero h1{ font-size:clamp(28px,5vw,40px); font-weight:900; margin-top:10px; color:var(--navy-deep); }
+  header.hero .sub{ margin-top:6px; font-size:15px; color:var(--muted); font-style:italic; font-family:'Fraunces', serif; }
+
+  .intro{
+    margin-top:26px;
+    padding:22px 24px;
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:10px;
+    font-size:16px;
+  }
+  .intro p{ margin:0 0 12px; }
+  .intro p:last-child{ margin-bottom:0; }
+  .intro strong{ color:var(--navy-deep); }
+
+  /* progress */
+  .progress{
+    display:flex; gap:6px; margin:34px 0 22px;
+  }
+  .progress .dot{
+    flex:1; display:flex; flex-direction:column; gap:8px; align-items:flex-start;
+    background:none; border:none; padding:0; cursor:default; text-align:left;
+    color:var(--muted); font-family:'IBM Plex Mono', monospace; font-size:11px;
+  }
+  .progress .dot .bar{
+    width:100%; height:4px; border-radius:3px; background:var(--line);
+  }
+  .progress .dot.done .bar{ background:var(--teal); }
+  .progress .dot.active .bar{ background:var(--gold); }
+  .progress .dot.clickable{ cursor:pointer; }
+  .progress .dot .lbl{ letter-spacing:.05em; text-transform:uppercase; }
+  .progress .dot.active .lbl{ color:var(--navy-deep); font-weight:600; }
+
+  .panel{
+    display:none;
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:30px 28px;
+  }
+  .panel.active{ display:block; }
+  .panel h2{ font-size:23px; color:var(--navy-deep); font-weight:600; }
+  .panel .task-label{
+    font-family:'IBM Plex Mono', monospace; font-size:11px; letter-spacing:.1em; text-transform:uppercase;
+    color:var(--muted); margin-bottom:6px; display:block;
+  }
+  .panel .prompt{ margin:14px 0 22px; font-size:16px; }
+
+  /* Task 1: word tiles */
+  .phrase-board{
+    background:var(--tint-teal);
+    border-radius:10px;
+    padding:22px;
+    margin-bottom:18px;
+  }
+  .tiles{ display:flex; flex-wrap:wrap; gap:10px; }
+  .tile{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:16px; font-weight:600;
+    background:var(--surface);
+    border:2px solid var(--teal);
+    color:var(--navy-deep);
+    border-radius:8px;
+    padding:10px 16px;
+    cursor:pointer;
+    transition:transform .12s ease, background .12s ease;
+  }
+  .tile:hover{ transform:translateY(-2px); }
+  .tile.read{ background:var(--teal); color:#fff; cursor:default; transform:none; }
+  .tile.read:hover{ transform:none; }
+  .tile:disabled{ cursor:default; }
+  .output-strip{
+    margin-top:16px;
+    min-height:44px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:17px;
+    color:var(--navy-deep);
+    border-top:1px dashed var(--muted);
+    padding-top:12px;
+    letter-spacing:.02em;
+  }
+  .output-strip .ph{ color:var(--muted); font-style:italic; font-family:'Source Sans 3', sans-serif; }
+
+  .btn{
+    font-family:'Source Sans 3', sans-serif;
+    font-weight:600; font-size:15px;
+    background:var(--teal); color:#fff;
+    border:none; border-radius:7px;
+    padding:12px 22px; cursor:pointer;
+  }
+  .btn:hover:not(:disabled){ background:var(--teal-deep); }
+  .btn:disabled{ background:var(--line); color:var(--muted); cursor:not-allowed; }
+  .btn.ghost{
+    background:transparent; color:var(--teal-deep); border:1.5px solid var(--teal);
+  }
+  .btn.ghost:hover:not(:disabled){ background:var(--tint-teal); }
+
+  .row{ display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin-top:22px; }
+  .row.between{ justify-content:space-between; }
+
+  .reveal{
+    margin-top:20px;
+    background:var(--tint-gold);
+    border-left:4px solid var(--gold);
+    border-radius:0 8px 8px 0;
+    padding:16px 20px;
+    font-size:15px;
+    display:none;
+  }
+  .reveal.shown{ display:block; }
+  .reveal strong{ color:var(--navy-deep); }
+
+  /* Task 2: MCQ */
+  .options{ display:grid; gap:10px; }
+  .opt{
+    text-align:left;
+    background:var(--surface);
+    border:1.5px solid var(--line);
+    border-radius:8px;
+    padding:13px 16px;
+    font-size:15px;
+    cursor:pointer;
+    color:var(--navy);
+    display:flex; gap:10px; align-items:flex-start;
+  }
+  .opt .letter{
+    font-family:'IBM Plex Mono', monospace; font-weight:600; color:var(--teal-deep); flex:0 0 auto;
+  }
+  .opt:hover{ border-color:var(--teal); }
+  .opt.picked{ border-color:var(--teal); background:var(--tint-teal); }
+  .opt.correct{ border-color:var(--good); background:var(--good-bg); }
+  .opt:disabled{ cursor:default; }
+
+  /* Task 3: matching */
+  .nonsense{
+    font-family:'Fraunces', serif;
+    font-size:20px;
+    font-style:italic;
+    color:var(--navy-deep);
+    background:var(--tint-teal);
+    border-radius:10px;
+    padding:20px 22px;
+    margin-bottom:22px;
+  }
+  .chip-tray{ display:flex; gap:10px; flex-wrap:wrap; margin-bottom:22px; min-height:52px; }
+  .chip{
+    font-family:'IBM Plex Mono', monospace; font-weight:600; font-size:15px;
+    background:var(--gold); color:var(--navy-deep);
+    border:none; border-radius:20px; padding:10px 18px;
+    cursor:grab;
+  }
+  .chip.selected{ outline:3px solid var(--teal-deep); outline-offset:2px; }
+  .chip.placed{ opacity:.35; cursor:default; }
+  .slots{ display:grid; gap:12px; }
+  .slot{
+    border:2px dashed var(--muted);
+    border-radius:8px;
+    padding:14px 16px;
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    min-height:52px;
+    background:var(--surface);
+  }
+  .slot.filled{ border-style:solid; border-color:var(--teal); }
+  .slot.correct{ border-color:var(--good); background:var(--good-bg); }
+  .slot.incorrect{ border-color:#c0392b; background:#fbe9e7; }
+  .slot .q{ font-size:14.5px; color:var(--muted); max-width:70%; }
+  .slot .held{ min-width:90px; text-align:right; }
+  .slot .held .chip{ cursor:pointer; }
+
+  .mini-q{ margin-top:24px; padding-top:20px; border-top:1px solid var(--line); }
+  .mini-q .prompt{ margin:0 0 12px; }
+  .pair-btns{ display:flex; gap:10px; }
+  .pair-btns .opt{ flex:1; justify-content:center; text-align:center; }
+
+  /* Task 4 */
+  .compare{ display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:24px; }
+  @media (max-width:520px){ .compare{ grid-template-columns:1fr; } }
+  .card{
+    border-radius:10px; padding:20px;
+  }
+  .card.speech{ background:var(--tint-gold); border-top:4px solid var(--gold); }
+  .card.language{ background:var(--tint-teal); border-top:4px solid var(--teal); }
+  .card h3{ font-size:16px; margin-bottom:8px; color:var(--navy-deep); }
+  .card p{ margin:0; font-size:14.5px; color:var(--navy); }
+
+  .takeaway{
+    background:var(--navy); color:#fff; border-radius:10px; padding:24px 26px; margin-bottom:24px;
+  }
+  .takeaway p{ margin:0; font-size:16px; line-height:1.65; color:#fff; }
+
+  textarea{
+    width:100%; min-height:110px; resize:vertical;
+    font-family:'Source Sans 3', sans-serif; font-size:15px;
+    border:1.5px solid var(--line); border-radius:8px; padding:14px;
+    background:var(--surface); color:var(--navy);
+  }
+  textarea:focus{ border-color:var(--teal); }
+  .copy-row{ display:flex; gap:12px; align-items:center; margin-top:12px; flex-wrap:wrap; }
+  .copy-status{ font-size:13px; color:var(--good); font-weight:600; opacity:0; transition:opacity .2s; }
+  .copy-status.shown{ opacity:1; }
+
+  .restart{ text-align:center; margin-top:30px; font-size:13px; }
+  .restart button{ background:none; border:none; color:var(--muted); text-decoration:underline; cursor:pointer; font-size:13px; }
+
+  [hidden]{ display:none !important; }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <header class="hero">
+    <div class="eyebrow">AAC Fast Fact #1 &middot; Activity 1.1</div>
+    <h1>Sound vs. Sense</h1>
+    <div class="sub">Speech, language, and communication are not the same thing. Here's how to feel the difference in about five minutes.</div>
+  </header>
+
+  <div class="intro">
+    <p><strong>Why this activity exists.</strong> AAC is often introduced with "don't worry, it won't stop speech from developing." That's true, but it's not the point. The bigger point is this: a student who isn't talking yet may still have a rich language system underneath, and that system deserves to be taught and used right now, not held back until speech arrives.</p>
+    <p>Before that idea will stick, you need to feel the difference between <em>producing speech sounds</em> and <em>understanding or building meaning</em>. The four short tasks below will do that. No right answers are required to move on &mdash; the reveals are the point.</p>
+  </div>
+
+  <nav class="progress" id="progress" aria-label="Activity progress"></nav>
+
+  <!-- TASK 1 -->
+  <section class="panel" id="step-0" data-step="0">
+    <span class="task-label">Task 1 of 4</span>
+    <h2>Read this sentence aloud.</h2>
+    <p class="prompt">It's written in Japanese, transliterated into the alphabet so you can sound it out. Tap each piece, left to right, to build it up &mdash; then have your device actually say it.</p>
+
+    <div class="phrase-board">
+      <div class="tiles" id="jp-tiles" role="group" aria-label="Tap each word in order"></div>
+      <div class="output-strip" id="jp-output"><span class="ph">Tap the first tile to begin&hellip;</span></div>
+    </div>
+
+    <div class="row">
+      <button class="btn" id="jp-speak" disabled>&#128266; Have it read aloud</button>
+    </div>
+
+    <div class="reveal" id="jp-reveal" role="status">
+      <p><strong>You just read it correctly.</strong> This says: <em>&ldquo;Kore o yomeru nara, tachiagatte kudasai&rdquo;</em> &mdash; but hold that thought. Don't translate it yet. Notice only this: your mouth (or your screen reader) just produced accurate, fluent speech sounds. That's it. That's all speech is &mdash; motor output. Keep going to Task 2.</p>
+    </div>
+
+    <div class="row between">
+      <span></span>
+      <button class="btn" id="next-0" disabled>Continue &rarr;</button>
+    </div>
+  </section>
+
+  <!-- TASK 2 -->
+  <section class="panel" id="step-1" data-step="1">
+    <span class="task-label">Task 2 of 4</span>
+    <h2>Now, what did you just say?</h2>
+    <p class="prompt">Pick the meaning you think is most likely correct. Go with your gut &mdash; there's no way to actually know, and that's the whole exercise.</p>
+
+    <div class="options" id="mcq-options" role="radiogroup" aria-label="What does the sentence mean?"></div>
+
+    <div class="reveal" id="mcq-reveal" role="status">
+      <p><strong>The real translation:</strong> &ldquo;If you can read this, please stand up.&rdquo;</p>
+      <p style="margin-top:10px;">Whether you happened to guess right or wrong doesn't matter. What matters is that you had <strong>zero real information</strong> to reason from. You decoded the sounds perfectly in Task 1. You could not touch the meaning in Task 2. Speech production and language comprehension are two different systems &mdash; you just watched them come apart.</p>
+    </div>
+
+    <div class="row between">
+      <button class="btn ghost" data-back="0">&larr; Back</button>
+      <button class="btn" id="next-1" disabled>Continue &rarr;</button>
+    </div>
+  </section>
+
+  <!-- TASK 3 -->
+  <section class="panel" id="step-2" data-step="2">
+    <span class="task-label">Task 3 of 4</span>
+    <h2>Now flip it. Find meaning with no real words at all.</h2>
+    <p class="prompt">Read this sentence. Three of its "words" are made up. Move each one to where it belongs.</p>
+
+    <div class="nonsense">&ldquo;The <strong>glorp</strong> daxed the <strong>flinder</strong> before it splinked into the <strong>gard</strong>.&rdquo;</div>
+
+    <div class="chip-tray" id="chip-tray" role="group" aria-label="Draggable words"></div>
+
+    <div class="slots" id="slots"></div>
+
+    <div class="row">
+      <button class="btn" id="check-grammar" disabled>Check my placements</button>
+    </div>
+
+    <div class="mini-q" id="mini-q" hidden>
+      <p class="prompt"><strong>One more:</strong> which happened first &mdash; the daxing, or the splinking?</p>
+      <div class="pair-btns" id="pair-btns"></div>
+    </div>
+
+    <div class="reveal" id="grammar-reveal" role="status">
+      <p><strong>You got real information out of a sentence with no real content words.</strong> Word order, the ending on "daxed," and the word "before" all carried structural meaning &mdash; grammar &mdash; independent of any actual vocabulary. Grammar can run without meaning underneath it (Task 3). Meaning can also exist without clear speech on top of it (Task 1 &amp; 2, in reverse). They are separable. That separability is the entire argument for teaching language early, through AAC, regardless of whether speech is present yet.</p>
+    </div>
+
+    <div class="row between">
+      <button class="btn ghost" data-back="1">&larr; Back</button>
+      <button class="btn" id="next-2" disabled>Continue &rarr;</button>
+    </div>
+  </section>
+
+  <!-- TASK 4 -->
+  <section class="panel" id="step-3" data-step="3">
+    <span class="task-label">Task 4 of 4</span>
+    <h2>The takeaway</h2>
+
+    <div class="compare">
+      <div class="card speech">
+        <h3>Speech</h3>
+        <p>The motor act of producing sounds with the mouth, breath, and voice. It's <em>output</em>. Task 1 showed you can do this fluently with no comprehension attached.</p>
+      </div>
+      <div class="card language">
+        <h3>Language</h3>
+        <p>The rule system underneath: vocabulary, grammar, and meaning. It can be expressed through speech, writing, signs, symbols, or a device. Task 3 showed it can operate without real speech content at all.</p>
+      </div>
+    </div>
+
+    <div class="takeaway">
+      <p>A student who isn't talking is not automatically a student without language. Waiting to see if speech develops before building language and communication skills gets the two systems backwards. AAC gives language a way out that doesn't depend on speech ever arriving.</p>
+    </div>
+
+    <p class="prompt" style="margin-bottom:10px;"><strong>Reflection:</strong> In two or three sentences, explain to a colleague why AAC targets language, not just speech. Use what you just experienced in Tasks 1&ndash;3.</p>
+    <textarea id="reflection" placeholder="Start typing here&hellip;"></textarea>
+    <div class="copy-row">
+      <button class="btn" id="copy-reflection">Copy for the discussion board</button>
+      <span class="copy-status" id="copy-status">Copied &mdash; paste it into the Canvas discussion.</span>
+    </div>
+
+    <div class="row between" style="margin-top:30px;">
+      <button class="btn ghost" data-back="2">&larr; Back</button>
+      <span></span>
+    </div>
+  </section>
+
+  <div class="restart">
+    <button id="restart-btn">Start the activity over</button>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  var STEP_COUNT = 4;
+  var stepLabels = ["Sound it out","What did you say?","Grammar without meaning","The takeaway"];
+  var current = 0;
+  var completed = [false,false,false,false];
+
+  var progressEl = document.getElementById('progress');
+  function renderProgress(){
+    progressEl.innerHTML = '';
+    for(var i=0;i<STEP_COUNT;i++){
+      var canClick = i===0 || completed[i-1];
+      var d = document.createElement(canClick ? 'button' : 'div');
+      d.className = 'dot' + (i===current?' active':'') + (completed[i]?' done':'') + (canClick?' clickable':'');
+      d.innerHTML = '<span class="bar"></span><span class="lbl">'+(i+1)+'. '+stepLabels[i]+'</span>';
+      if(canClick){
+        d.type = 'button';
+        d.addEventListener('click', (function(idx){ return function(){ goTo(idx); }; })(i));
+      }
+      progressEl.appendChild(d);
+    }
+  }
+
+  function goTo(i){
+    current = i;
+    var panels = document.querySelectorAll('.panel');
+    for(var p=0;p<panels.length;p++){ panels[p].classList.remove('active'); }
+    document.getElementById('step-'+i).classList.add('active');
+    renderProgress();
+    document.getElementById('step-'+i).scrollIntoView({behavior:'smooth', block:'start'});
+  }
+
+  var backBtns = document.querySelectorAll('[data-back]');
+  for(var bb=0; bb<backBtns.length; bb++){
+    backBtns[bb].addEventListener('click', function(){ goTo(parseInt(this.getAttribute('data-back'),10)); });
+  }
+
+  document.getElementById('next-0').addEventListener('click', function(){ completed[0]=true; goTo(1); });
+  document.getElementById('next-1').addEventListener('click', function(){ completed[1]=true; goTo(2); });
+  document.getElementById('next-2').addEventListener('click', function(){ completed[2]=true; goTo(3); });
+
+  document.getElementById('restart-btn').addEventListener('click', function(){
+    if(confirm('Reset all four tasks and start over?')) location.reload();
+  });
+
+  /* ---------- Task 1: word tiles ---------- */
+  var jpWords = [
+    {rom:'Kore', jp:'これ'},
+    {rom:'o', jp:'を'},
+    {rom:'yomeru', jp:'読める'},
+    {rom:'nara,', jp:'なら'},
+    {rom:'tachiagatte', jp:'立ち上がって'},
+    {rom:'kudasai.', jp:'ください'}
+  ];
+  var jpTilesEl = document.getElementById('jp-tiles');
+  var jpOutputEl = document.getElementById('jp-output');
+  var jpSpeakBtn = document.getElementById('jp-speak');
+  var jpRevealEl = document.getElementById('jp-reveal');
+  var jpNextBtn = document.getElementById('next-0');
+  var jpReadCount = 0;
+  var jpSpoken = [];
+
+  jpWords.forEach(function(w, idx){
+    var b = document.createElement('button');
+    b.className = 'tile';
+    b.type = 'button';
+    b.textContent = w.rom;
+    b.setAttribute('aria-label', 'Word '+(idx+1)+' of '+jpWords.length+': '+w.rom);
+    b.addEventListener('click', function(){
+      if(b.classList.contains('read')) return;
+      if(idx !== jpReadCount) return; // enforce left-to-right order
+      b.classList.add('read');
+      jpSpoken.push(w.rom);
+      jpReadCount++;
+      jpOutputEl.textContent = jpSpoken.join(' ');
+      if(jpReadCount === jpWords.length){
+        jpSpeakBtn.disabled = false;
+      }
+    });
+    jpTilesEl.appendChild(b);
+  });
+
+  jpSpeakBtn.addEventListener('click', function(){
+    var full = jpWords.map(function(w){return w.rom;}).join(' ');
+    try{
+      if('speechSynthesis' in window){
+        var u = new SpeechSynthesisUtterance(full);
+        var voices = window.speechSynthesis.getVoices();
+        var jaVoice = voices.find(function(v){ return /ja(-|_)?JP|Japanese/i.test(v.lang+v.name); });
+        if(jaVoice) u.voice = jaVoice;
+        u.lang = jaVoice ? jaVoice.lang : 'ja-JP';
+        u.rate = 0.85;
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.speak(u);
+      }
+    }catch(e){}
+    jpRevealEl.classList.add('shown');
+    jpNextBtn.disabled = false;
+  });
+
+  /* ---------- Task 2: MCQ ---------- */
+  var mcqOptions = [
+    {label:'Please close the door quietly.', correct:false},
+    {label:'If you can read this, please stand up.', correct:true},
+    {label:'Thank you for your hard work today.', correct:false},
+    {label:'I don’t understand what you just said.', correct:false}
+  ];
+  var mcqEl = document.getElementById('mcq-options');
+  var mcqReveal = document.getElementById('mcq-reveal');
+  var mcqNext = document.getElementById('next-1');
+  var mcqAnswered = false;
+  var letters = ['A','B','C','D'];
+
+  mcqOptions.forEach(function(opt, idx){
+    var b = document.createElement('button');
+    b.className = 'opt';
+    b.type = 'button';
+    b.setAttribute('role','radio');
+    b.setAttribute('aria-checked','false');
+    b.innerHTML = '<span class="letter">'+letters[idx]+'</span><span>'+opt.label+'</span>';
+    b.addEventListener('click', function(){
+      if(mcqAnswered) return;
+      mcqAnswered = true;
+      var children = mcqEl.children;
+      for(var i=0;i<children.length;i++){
+        children[i].disabled = true;
+        children[i].setAttribute('aria-checked', i===idx ? 'true':'false');
+        if(i===idx) children[i].classList.add('picked');
+        if(mcqOptions[i].correct) children[i].classList.add('correct');
+      }
+      mcqReveal.classList.add('shown');
+      mcqNext.disabled = false;
+    });
+    mcqEl.appendChild(b);
+  });
+
+  /* ---------- Task 3: matching ---------- */
+  var chips = [
+    {id:'glorp', label:'glorp'},
+    {id:'flinder', label:'flinder'},
+    {id:'gard', label:'gard'}
+  ];
+  var slots = [
+    {id:'subject', q:'Who (or what) did the action?', answer:'glorp'},
+    {id:'object', q:'Who (or what) received the action?', answer:'flinder'},
+    {id:'where', q:'Where did something end up?', answer:'gard'}
+  ];
+  var placements = {}; // slotId -> chipId
+  var selectedChip = null;
+
+  var trayEl = document.getElementById('chip-tray');
+  var slotsEl = document.getElementById('slots');
+  var checkBtn = document.getElementById('check-grammar');
+  var miniQEl = document.getElementById('mini-q');
+  var pairBtnsEl = document.getElementById('pair-btns');
+  var grammarReveal = document.getElementById('grammar-reveal');
+  var nextStep2 = document.getElementById('next-2');
+
+  function renderChips(){
+    trayEl.innerHTML = '';
+    var anyLeft = false;
+    chips.forEach(function(c){
+      var placedIds = [];
+      for(var k in placements){ placedIds.push(placements[k]); }
+      if(placedIds.indexOf(c.id) !== -1) return;
+      anyLeft = true;
+      var b = document.createElement('button');
+      b.className = 'chip' + (selectedChip===c.id ? ' selected':'');
+      b.type = 'button';
+      b.textContent = c.label;
+      b.draggable = true;
+      b.setAttribute('aria-pressed', selectedChip===c.id ? 'true':'false');
+      b.addEventListener('click', function(){
+        selectedChip = (selectedChip===c.id) ? null : c.id;
+        renderChips();
+      });
+      b.addEventListener('dragstart', function(e){
+        e.dataTransfer.setData('text/plain', c.id);
+      });
+      trayEl.appendChild(b);
+    });
+    if(!anyLeft){
+      var done = document.createElement('span');
+      done.style.fontSize='13px'; done.style.color='var(--muted)';
+      done.textContent = 'All words placed.';
+      trayEl.appendChild(done);
+    }
+  }
+
+  function renderSlots(){
+    slotsEl.innerHTML = '';
+    slots.forEach(function(s, idx){
+      var div = document.createElement('div');
+      var chipId = placements[s.id];
+      div.className = 'slot' + (chipId ? ' filled':'');
+      var qSpan = document.createElement('span');
+      qSpan.className = 'q';
+      qSpan.textContent = s.q;
+      div.appendChild(qSpan);
+      var heldSpan = document.createElement('span');
+      heldSpan.className = 'held';
+      if(chipId){
+        var chipObj = null;
+        for(var ci=0; ci<chips.length; ci++){ if(chips[ci].id===chipId) chipObj = chips[ci]; }
+        var cb = document.createElement('button');
+        cb.className = 'chip placed';
+        cb.type='button';
+        cb.textContent = chipObj.label;
+        cb.style.opacity = 1;
+        cb.style.cursor = 'pointer';
+        cb.addEventListener('click', function(){
+          delete placements[s.id];
+          renderChips(); renderSlots(); updateCheckBtn();
+        });
+        heldSpan.appendChild(cb);
+      } else {
+        heldSpan.innerHTML = '<span style="font-size:13px;color:var(--muted);">drop here</span>';
+      }
+      div.appendChild(heldSpan);
+
+      div.addEventListener('click', function(){
+        if(selectedChip && !placements[s.id]){
+          placements[s.id] = selectedChip;
+          selectedChip = null;
+          renderChips(); renderSlots(); updateCheckBtn();
+        }
+      });
+      div.addEventListener('dragover', function(e){ e.preventDefault(); });
+      div.addEventListener('drop', function(e){
+        e.preventDefault();
+        var id = e.dataTransfer.getData('text/plain');
+        if(id && !placements[s.id]){
+          placements[s.id] = id;
+          selectedChip = null;
+          renderChips(); renderSlots(); updateCheckBtn();
+        }
+      });
+      slotsEl.appendChild(div);
+    });
+  }
+
+  function updateCheckBtn(){
+    var count = 0;
+    for(var k in placements){ count++; }
+    checkBtn.disabled = count < slots.length;
+  }
+
+  checkBtn.addEventListener('click', function(){
+    var slotDivs = slotsEl.children;
+    slots.forEach(function(s, idx){
+      if(placements[s.id] === s.answer){
+        slotDivs[idx].classList.add('correct');
+      } else {
+        slotDivs[idx].classList.add('incorrect');
+      }
+    });
+    checkBtn.disabled = true;
+    miniQEl.hidden = false;
+    miniQEl.scrollIntoView({behavior:'smooth', block:'nearest'});
+  });
+
+  var pairOptions = [
+    {label:'The daxing happened first', correct:true},
+    {label:'The splinking happened first', correct:false}
+  ];
+  pairOptions.forEach(function(opt, idx){
+    var b = document.createElement('button');
+    b.className = 'opt';
+    b.type = 'button';
+    b.textContent = opt.label;
+    b.addEventListener('click', function(){
+      var children = pairBtnsEl.children;
+      for(var i=0;i<children.length;i++){
+        children[i].disabled = true;
+        if(pairOptions[i].correct) children[i].classList.add('correct');
+        else if(i===idx) children[i].classList.add('picked');
+      }
+      grammarReveal.classList.add('shown');
+      nextStep2.disabled = false;
+    });
+    pairBtnsEl.appendChild(b);
+  });
+
+  renderChips();
+  renderSlots();
+
+  /* ---------- Task 4: reflection copy ---------- */
+  var copyBtn = document.getElementById('copy-reflection');
+  var copyStatus = document.getElementById('copy-status');
+  var reflectionEl = document.getElementById('reflection');
+  copyBtn.addEventListener('click', function(){
+    var text = 'Activity 1.1 – Sound vs. Sense Reflection:\n' + (reflectionEl.value.trim() || '(no response entered)');
+    function shown(){
+      copyStatus.classList.add('shown');
+      setTimeout(function(){ copyStatus.classList.remove('shown'); }, 2500);
+    }
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(shown).catch(function(){
+        fallbackCopy(text); shown();
+      });
+    } else {
+      fallbackCopy(text); shown();
+    }
+  });
+  function fallbackCopy(text){
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position='fixed'; ta.style.left='-9999px';
+    document.body.appendChild(ta); ta.select();
+    try{ document.execCommand('copy'); }catch(e){}
+    document.body.removeChild(ta);
+  }
+
+  renderProgress();
+  goTo(0);
+})();
+</script>
+
+</body>
+</html>
