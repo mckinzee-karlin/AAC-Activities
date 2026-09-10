@@ -413,7 +413,7 @@
     <section class="step" id="step-4" aria-labelledby="step4-heading">
       <h2 id="step4-heading">Try it again</h2>
       <div class="instruction-box">
-        <p class="instruction-text lang-ja" lang="ja" id="jaInstruction">ピンクのハートをクリックしてください</p>
+        <p class="instruction-text lang-ja" lang="ja" id="jaInstruction">黄色い四角をクリックしてください</p>
         <button class="speak-btn" id="jaSpeakBtn" type="button">🔊 音声を再生 (Play audio)</button>
       </div>
       <div class="shape-grid" id="jaShapeGrid"></div>
@@ -659,7 +659,7 @@
   });
 
   var jaResult = null;
-  buildShapeGrid(document.getElementById('jaShapeGrid'), 'heart', function(isCorrect, kind){
+  buildShapeGrid(document.getElementById('jaShapeGrid'), 'square', function(isCorrect, kind){
     jaResult = isCorrect;
     var fb = document.getElementById('jaFeedback');
     fb.className = 'feedback show neutral';
@@ -676,11 +676,11 @@
       document.getElementById('reflectReveal').classList.add('show');
       var note = document.getElementById('answerNote');
       if(jaResult === true){
-        note.textContent = "For reference: you actually selected the correct shape (the pink heart) this time — nice guess, or perhaps you recognized a cognate or gesture! The broader point still holds for anyone who doesn't speak the language.";
+        note.textContent = "For reference: you actually selected the correct shape (the yellow square) this time — nice guess, or perhaps you recognized a cognate or gesture! The broader point still holds for anyone who doesn't speak the language.";
       } else if(jaResult === false){
-        note.textContent = 'For reference, the correct answer was the pink heart.';
+      note.textContent = 'For reference, the correct answer was the yellow square.';
       } else {
-        note.textContent = 'For reference, the correct answer was the pink heart.';
+      note.textContent = 'For reference, the correct answer was the yellow square.';
       }
       markComplete(5);
     });
