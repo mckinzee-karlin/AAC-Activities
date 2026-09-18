@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Activity: AAC Myths &amp; Facts</title>
+<style>
+  :root{
+    --navy:#333951;
+    --lagoon:#007D8B;
+    --gold:#F8DA54;
+    --bluegray:#586373;
+    --storm:#F6F6F4;
+    --gray:#E8E9EB;
+    --white:#FFFFFF;
+    --fact-color:#2E7D32;
+    --fact-bg:#E7F3E8;
+    --myth-color:#B3261E;
+    --myth-bg:#FBE9E7;
+    --radius:12px;
+    --shadow:0 2px 8px rgba(51,57,81,0.12);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:"Segoe UI",Arial,sans-serif;
+    background:var(--storm);
+    color:var(--navy);
+    line-height:1.55;
+  }
+  .app{
+    max-width:800px;
+    margin:0 auto;
+    background:var(--white);
+    display:flex;
+    flex-direction:column;
+  }
+  header{
+    background:var(--navy);
+    color:var(--white);
+    padding:16px 24px 14px;
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:12px;
+  }
+  header h1{
+    margin:0 0 4px;
+    font-size:1.2rem;
+    font-weight:700;
+  }
+  header p{
+    margin:0;
+    font-size:0.88rem;
+    color:var(--gray);
+  }
+  .brand-badge{
+    font-size:0.72rem;
+    color:var(--gray);
+    text-align:right;
+    white-space:nowrap;
+    flex-shrink:0;
+    padding-top:2px;
+  }
+  .brand-badge .star{color:var(--gold);}
+
+  .progress-wrap{
+    padding:12px 24px 10px;
+    background:var(--white);
+    border-bottom:1px solid var(--gray);
+  }
+  .progress-label{
+    display:flex;
+    justify-content:space-between;
+    font-size:0.78rem;
+    color:var(--bluegray);
+    margin-bottom:6px;
+  }
+  .progress-track{
+    height:6px;
+    background:var(--gray);
+    border-radius:3px;
+    overflow:hidden;
+  }
+  .progress-fill{
+    height:100%;
+    background:var(--lagoon);
+    transition:width .25s ease;
+  }
+  .restart-link{
+    background:none;
+    border:none;
+    color:var(--bluegray);
+    font-size:0.72rem;
+    text-decoration:underline;
+    cursor:pointer;
+    padding:6px 0 0;
+    display:block;
+    margin:0 0 0 auto;
+    text-align:right;
+  }
+  .restart-link:hover{color:var(--lagoon);}
+
+  .nav-bar{
+    background:var(--white);
+    border-bottom:1px solid var(--gray);
+    padding:12px 24px;
+    display:flex;
+    justify-content:space-between;
+  }
+  .nav-btn{
+    padding:10px 20px;
+    border-radius:8px;
+    border:none;
+    font-weight:700;
+    cursor:pointer;
+    font-size:0.95rem;
+  }
+  .nav-btn.back{background:var(--gray); color:var(--navy);}
+  .nav-btn.next{background:var(--lagoon); color:var(--white);}
+  .nav-btn:disabled{opacity:0.4; cursor:not-allowed;}
+
+  main{
+    padding:20px 24px 32px;
+  }
+  .step{display:none;}
+  .step.active{display:block;}
+  h2{
+    color:var(--navy);
+    font-size:1.15rem;
+    margin-top:0;
+  }
+  .intro-text{color:var(--bluegray); font-size:0.95rem;}
+  .card{
+    border:1px solid var(--gray);
+    border-radius:var(--radius);
+    padding:16px 18px;
+    margin-bottom:16px;
+    background:var(--white);
+    box-shadow:var(--shadow);
+  }
+
+  .score-note{
+    text-align:center;
+    font-size:0.85rem;
+    color:var(--bluegray);
+    margin-bottom:16px;
+  }
+  .score-note strong{color:var(--navy);}
+
+  .statement-card{
+    background:var(--storm);
+    border-radius:var(--radius);
+    padding:28px 22px;
+    text-align:center;
+    font-size:1.15rem;
+    font-weight:600;
+    color:var(--navy);
+    margin-bottom:20px;
+    min-height:70px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .guess-row{
+    display:flex;
+    justify-content:center;
+    gap:16px;
+    margin-bottom:18px;
+    flex-wrap:wrap;
+  }
+  .guess-btn{
+    border:2px solid var(--lagoon);
+    background:var(--white);
+    color:var(--lagoon);
+    border-radius:8px;
+    padding:12px 32px;
+    font-weight:700;
+    font-size:1rem;
+    cursor:pointer;
+    min-width:130px;
+  }
+  .guess-btn:hover:not(:disabled){background:var(--lagoon); color:var(--white);}
+  .guess-btn:disabled{cursor:default;}
+  .guess-btn.chosen.correct{background:var(--fact-color); border-color:var(--fact-color); color:var(--white);}
+  .guess-btn.chosen.incorrect{background:var(--myth-color); border-color:var(--myth-color); color:var(--white);}
+  .guess-btn.reveal-correct{border-color:var(--fact-color); color:var(--fact-color);}
+
+  .verdict-banner{
+    text-align:center;
+    font-weight:700;
+    font-size:1.05rem;
+    padding:10px;
+    border-radius:8px;
+    margin-bottom:14px;
+  }
+  .verdict-banner.fact{background:var(--fact-bg); color:var(--fact-color);}
+  .verdict-banner.myth{background:var(--myth-bg); color:var(--myth-color);}
+
+  .reveal-box{
+    background:var(--storm);
+    border-left:5px solid var(--gold);
+    border-radius:var(--radius);
+    padding:16px 18px;
+    font-size:0.95rem;
+  }
+  .reveal-box p{margin:0;}
+  .reveal-box .source-tag{
+    display:block;
+    margin-top:10px;
+    font-size:0.78rem;
+    color:var(--bluegray);
+  }
+
+  ul.point-list{margin:8px 0 0 20px; padding:0;}
+  ul.point-list li{margin-bottom:8px; font-size:0.95rem;}
+
+  .final-list{
+    list-style:none;
+    margin:0;
+    padding:0;
+  }
+  .final-list li{
+    display:flex;
+    align-items:flex-start;
+    gap:10px;
+    padding:10px 0;
+    border-bottom:1px solid var(--gray);
+    font-size:0.92rem;
+  }
+  .final-list li:last-child{border-bottom:none;}
+  .tag{
+    flex-shrink:0;
+    font-size:0.72rem;
+    font-weight:700;
+    padding:3px 9px;
+    border-radius:20px;
+    text-transform:uppercase;
+  }
+  .tag.fact{background:var(--fact-bg); color:var(--fact-color);}
+  .tag.myth{background:var(--myth-bg); color:var(--myth-color);}
+
+  .visually-hidden{
+    position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0,0,0,0);
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div>
+      <h1>AAC Myths &amp; Facts</h1>
+      <p>What IDEA actually requires for access, timelines, and cost</p>
+    </div>
+    <div class="brand-badge"><span class="star">&#9733;</span> REGION 13<br>Education Service Center</div>
+  </header>
+
+  <div class="progress-wrap">
+    <div class="progress-label">
+      <span id="progressText">Step 1 of 11</span>
+      <span id="progressStepName">Welcome</span>
+    </div>
+    <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:9%"></div></div>
+    <button class="restart-link" id="restartBtn" type="button">Restart activity</button>
+  </div>
+
+  <div class="nav-bar">
+    <button class="nav-btn back" id="backBtn" type="button">Back</button>
+    <button class="nav-btn next" id="nextBtn" type="button">Next</button>
+  </div>
+
+  <main>
+    <!-- STEP 1: Intro -->
+    <section class="step active" id="step-1">
+      <h2>Myth or Fact?</h2>
+      <p class="intro-text">AAC decisions get slowed down by misconceptions almost as often as they get slowed down by paperwork. This activity puts nine statements about AAC in front of you &#8212; some are myths, some are facts under IDEA. Guess before you look, then read why.</p>
+      <div class="card">
+        <p style="margin:0;">For each statement, choose <strong>Myth</strong> or <strong>Fact</strong>. You'll see the correct answer and a short explanation right after you guess.</p>
+      </div>
+    </section>
+
+    <!-- STEPS 2-10: nine myth/fact cards (generated by JS from data array) -->
+    <section class="step" id="step-mf" data-index="0">
+      <h2 id="mfHeading">Statement <span id="mfNum">1</span> of 9</h2>
+      <p class="score-note">Correct so far: <strong id="scoreText">0</strong> of <span id="attemptedText">0</span> attempted</p>
+      <div class="statement-card" id="mfStatement"></div>
+      <div class="guess-row" id="mfGuessRow">
+        <button class="guess-btn" id="mfMythBtn" type="button">Myth</button>
+        <button class="guess-btn" id="mfFactBtn" type="button">Fact</button>
+      </div>
+      <div id="mfResult" style="display:none;">
+        <div class="verdict-banner" id="mfVerdictBanner"></div>
+        <div class="reveal-box">
+          <p id="mfExplanation"></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- STEP 11: Summary -->
+    <section class="step" id="step-11">
+      <h2>How'd you do?</h2>
+      <p class="intro-text">You got <strong id="finalScore">0</strong> out of 9 on the first guess. Here's the full set for reference:</p>
+      <ul class="final-list" id="finalList"></ul>
+      <div class="card" style="margin-top:20px;">
+        <p style="margin:0;">Head to the Canvas discussion for this Fast Fact and share what stood out to you.</p>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+(function(){
+  var items = [
+    {
+      statement: "AAC won't hurt a toddler's speech development, even if it's introduced very early.",
+      answer: "fact",
+      explanation: "There is no research showing AAC hinders speech production. Introducing AAC early gives infants and toddlers a way to communicate, reduces frustration, and can provide an auditory model that supports spoken language rather than replacing it."
+    },
+    {
+      statement: "If a student needs AAC to access their education, the district must provide it at no cost to the family.",
+      answer: "fact",
+      explanation: "Under IDEA, if the IEP team determines a student needs an AAC device or service to receive a Free Appropriate Public Education, the district must provide it. It is not optional, and it cannot be billed to the family."
+    },
+    {
+      statement: "A formal AAC evaluation is required before an IEP team can move forward with a device.",
+      answer: "myth",
+      explanation: "A formal evaluation is not a prerequisite. The IEP team can determine that a student needs AAC based on what they already know about the student. If the team is unsure, they can request a formal evaluation, but it isn't required to get started."
+    },
+    {
+      statement: "If a student needs their AAC device for homework, the school must let them take it home.",
+      answer: "fact",
+      explanation: "Access to communication doesn't stop at the classroom door. If a device is needed to complete homework or other educational tasks at home, the school must permit that use."
+    },
+    {
+      statement: "IDEA requires AAC services to start as soon as possible after the IEP is written, even if the device needs to be ordered or customized.",
+      answer: "fact",
+      explanation: "IDEA requires that services be made available as soon as possible following the IEP. If a device needs to be ordered or customized, the team documents that process in the IEP and identifies interim supports so the student isn't left waiting."
+    },
+    {
+      statement: "Campus IT has the final say over whether a student gets an AAC device.",
+      answer: "myth",
+      explanation: "IT is a valuable partner for things like system compatibility and technical support, but they don't make the decision. The IEP team determines what AAC device or service a student needs."
+    },
+    {
+      statement: "Any team member the IEP team identifies &#8212; not just an AAC specialist &#8212; can support a student's device in the classroom.",
+      answer: "fact",
+      explanation: "Supporting AAC use is a shared responsibility. General education teachers, special education teachers, and related service providers can all play a role, with specialists brought in for more complex needs."
+    },
+    {
+      statement: "AAC only comes in expensive, high-tech packages.",
+      answer: "myth",
+      explanation: "AAC exists on a cost continuum. Low-tech options like communication boards sit alongside built-in accessibility features many devices already have, such as text-to-speech. Need should drive the decision, not price."
+    },
+    {
+      statement: "If one funding source for AAC falls through, there's no other way to pay for it.",
+      answer: "myth",
+      explanation: "Funding for AAC is layered, not limited to one stream. Private insurance, Medicaid/EPSDT, state AT loan and reuse programs, and IDEA Part B or Part C funds can all apply, with the school district responsible as the payer of last resort when a student can't otherwise get what they need."
+    }
+  ];
+
+  var TOTAL_STEPS = 11; // step 1 intro, steps 2-10 map to items[0..8] via step-mf, step 11 summary
+  var currentStep = 1;
+  var results = []; // {chosen, correct} per item, undefined if not yet attempted
+  var score = 0;
+  var attempted = 0;
+
+  var stepNames = ["Welcome"];
+  for (var s = 1; s <= 9; s++) stepNames.push("Statement " + s);
+  stepNames.push("Summary");
+
+  function loadState(){
+    try{
+      var saved = JSON.parse(localStorage.getItem('aac_mf_state') || 'null');
+      if(saved){
+        currentStep = saved.currentStep || 1;
+        results = saved.results || [];
+        score = saved.score || 0;
+        attempted = saved.attempted || 0;
+      }
+    }catch(e){}
+  }
+  function saveState(){
+    try{
+      localStorage.setItem('aac_mf_state', JSON.stringify({currentStep:currentStep, results:results, score:score, attempted:attempted}));
+    }catch(e){}
+  }
+
+  function mfIndexForStep(n){
+    // steps 2..10 -> items 0..8
+    if(n >= 2 && n <= 10) return n - 2;
+    return -1;
+  }
+
+  function renderMfStep(idx){
+    var item = items[idx];
+    document.getElementById('mfNum').textContent = idx + 1;
+    document.getElementById('mfStatement').innerHTML = item.statement;
+    document.getElementById('scoreText').textContent = score;
+    document.getElementById('attemptedText').textContent = attempted;
+
+    var mythBtn = document.getElementById('mfMythBtn');
+    var factBtn = document.getElementById('mfFactBtn');
+    var resultBox = document.getElementById('mfResult');
+    mythBtn.className = 'guess-btn';
+    factBtn.className = 'guess-btn';
+    mythBtn.disabled = false;
+    factBtn.disabled = false;
+
+    var prior = results[idx];
+    if(prior){
+      showResult(idx, prior.chosen, false);
+    } else {
+      resultBox.style.display = 'none';
+    }
+  }
+
+  function showResult(idx, chosen, isNewAttempt){
+    var item = items[idx];
+    var correct = (chosen === item.answer);
+    var mythBtn = document.getElementById('mfMythBtn');
+    var factBtn = document.getElementById('mfFactBtn');
+    mythBtn.disabled = true;
+    factBtn.disabled = true;
+
+    var chosenBtn = chosen === 'myth' ? mythBtn : factBtn;
+    var otherBtn = chosen === 'myth' ? factBtn : mythBtn;
+    chosenBtn.classList.add('chosen', correct ? 'correct' : 'incorrect');
+    if(!correct){
+      otherBtn.classList.add('reveal-correct');
+    }
+
+    var banner = document.getElementById('mfVerdictBanner');
+    banner.textContent = item.answer === 'fact' ? 'FACT' : 'MYTH';
+    banner.className = 'verdict-banner ' + item.answer;
+    document.getElementById('mfExplanation').innerHTML = item.explanation;
+    document.getElementById('mfResult').style.display = 'block';
+
+    if(isNewAttempt){
+      results[idx] = {chosen: chosen, correct: correct};
+      attempted++;
+      if(correct) score++;
+      document.getElementById('scoreText').textContent = score;
+      document.getElementById('attemptedText').textContent = attempted;
+      saveState();
+    }
+  }
+
+  document.getElementById('mfMythBtn').addEventListener('click', function(){
+    var idx = mfIndexForStep(currentStep);
+    if(idx === -1 || results[idx]) return;
+    showResult(idx, 'myth', true);
+  });
+  document.getElementById('mfFactBtn').addEventListener('click', function(){
+    var idx = mfIndexForStep(currentStep);
+    if(idx === -1 || results[idx]) return;
+    showResult(idx, 'fact', true);
+  });
+
+  function renderSummary(){
+    var finalScore = 0;
+    var list = document.getElementById('finalList');
+    list.innerHTML = '';
+    items.forEach(function(item, i){
+      var r = results[i];
+      if(r && r.correct) finalScore++;
+      var li = document.createElement('li');
+      var tag = document.createElement('span');
+      tag.className = 'tag ' + item.answer;
+      tag.textContent = item.answer;
+      var span = document.createElement('span');
+      span.innerHTML = item.statement;
+      li.appendChild(tag);
+      li.appendChild(span);
+      list.appendChild(li);
+    });
+    document.getElementById('finalScore').textContent = finalScore;
+  }
+
+  function showStep(n){
+    for(var i=1;i<=TOTAL_STEPS;i++){
+      var el = document.getElementById(i === 1 ? 'step-1' : (i === TOTAL_STEPS ? 'step-11' : 'step-mf'));
+    }
+    document.getElementById('step-1').classList.remove('active');
+    document.getElementById('step-mf').classList.remove('active');
+    document.getElementById('step-11').classList.remove('active');
+
+    if(n === 1){
+      document.getElementById('step-1').classList.add('active');
+    } else if(n === TOTAL_STEPS){
+      document.getElementById('step-11').classList.add('active');
+      renderSummary();
+    } else {
+      document.getElementById('step-mf').classList.add('active');
+      renderMfStep(mfIndexForStep(n));
+    }
+
+    currentStep = n;
+    document.getElementById('progressText').textContent = 'Step ' + n + ' of ' + TOTAL_STEPS;
+    document.getElementById('progressStepName').textContent = stepNames[n-1];
+    document.getElementById('progressFill').style.width = (n/TOTAL_STEPS*100) + '%';
+    document.getElementById('backBtn').disabled = (n === 1);
+    var nextBtn = document.getElementById('nextBtn');
+    nextBtn.textContent = (n === TOTAL_STEPS) ? 'Done' : 'Next';
+    nextBtn.disabled = (n === TOTAL_STEPS);
+    window.scrollTo(0,0);
+    saveState();
+  }
+
+  document.getElementById('backBtn').addEventListener('click', function(){
+    if(currentStep > 1) showStep(currentStep - 1);
+  });
+  document.getElementById('nextBtn').addEventListener('click', function(){
+    if(currentStep < TOTAL_STEPS) showStep(currentStep + 1);
+  });
+
+  var restartBtn = document.getElementById('restartBtn');
+  if(restartBtn){
+    restartBtn.addEventListener('click', function(){
+      try{ localStorage.removeItem('aac_mf_state'); }catch(e){}
+      location.reload();
+    });
+  }
+
+  loadState();
+  showStep(currentStep);
+})();
+</script>
+</body>
+</html>
