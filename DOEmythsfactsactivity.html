@@ -240,6 +240,44 @@
   .tag.fact{background:var(--fact-bg); color:var(--fact-color);}
   .tag.myth{background:var(--myth-bg); color:var(--myth-color);}
 
+  /* Discussion */
+  .prompt-box{
+    background:var(--storm);
+    border-radius:var(--radius);
+    padding:14px 16px;
+    margin-bottom:14px;
+    font-size:0.95rem;
+    font-weight:600;
+  }
+  textarea#discussionText{
+    width:100%;
+    min-height:140px;
+    border:1px solid var(--bluegray);
+    border-radius:8px;
+    padding:12px;
+    font-size:0.95rem;
+    font-family:inherit;
+    resize:vertical;
+  }
+  .copy-row{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    margin-top:10px;
+    flex-wrap:wrap;
+  }
+  .copy-btn{
+    background:var(--gold);
+    color:var(--navy);
+    border:none;
+    border-radius:8px;
+    padding:10px 18px;
+    font-weight:700;
+    cursor:pointer;
+  }
+  .copy-btn:hover{background:#e9c934;}
+  .copy-status{font-size:0.88rem; color:var(--fact-color); font-weight:600;}
+
   .visually-hidden{
     position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0,0,0,0);
   }
@@ -257,10 +295,10 @@
 
   <div class="progress-wrap">
     <div class="progress-label">
-      <span id="progressText">Step 1 of 11</span>
+      <span id="progressText">Step 1 of 12</span>
       <span id="progressStepName">Welcome</span>
     </div>
-    <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:9%"></div></div>
+    <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:8%"></div></div>
     <button class="restart-link" id="restartBtn" type="button">Restart activity</button>
   </div>
 
@@ -302,8 +340,21 @@
       <p class="intro-text">You got <strong id="finalScore">0</strong> out of 9 on the first guess. Here's the full set for reference:</p>
       <ul class="final-list" id="finalList"></ul>
       <div class="card" style="margin-top:20px;">
-        <p style="margin:0;">Head to the Canvas discussion for this Fast Fact and share what stood out to you.</p>
+        <p style="margin:0;">One more step: turn the page for a short reflection question, then post your response to this Fast Fact's discussion.</p>
       </div>
+    </section>
+
+    <!-- STEP 12: Discussion response -->
+    <section class="step" id="step-12">
+      <h2>Discussion response</h2>
+      <div class="prompt-box">What is one thing you learned from this activity that changed how you'll talk about AAC with a family, a colleague, or an IEP team going forward?</div>
+      <label for="discussionText" class="visually-hidden">Your discussion response</label>
+      <textarea id="discussionText" placeholder="Type your response here..."></textarea>
+      <div class="copy-row">
+        <button class="copy-btn" id="copyBtn" type="button">Copy my response</button>
+        <span class="copy-status" id="copyStatus" role="status" aria-live="polite"></span>
+      </div>
+      <p class="intro-text" style="margin-top:14px;">Once copied, click the Navy "Reply" button on the Canvas discussion page and paste your response.</p>
     </section>
   </main>
 </div>
@@ -358,7 +409,7 @@
     }
   ];
 
-  var TOTAL_STEPS = 11; // step 1 intro, steps 2-10 map to items[0..8] via step-mf, step 11 summary
+  var TOTAL_STEPS = 12; // step 1 intro, steps 2-10 map to items[0..8] via step-mf, step 11 summary, step 12 discussion
   var currentStep = 1;
   var results = []; // {chosen, correct} per item, undefined if not yet attempted
   var score = 0;
@@ -367,6 +418,7 @@
   var stepNames = ["Welcome"];
   for (var s = 1; s <= 9; s++) stepNames.push("Statement " + s);
   stepNames.push("Summary");
+  stepNames.push("Discussion");
 
   function loadState(){
     try{
@@ -376,6 +428,10 @@
         results = saved.results || [];
         score = saved.score || 0;
         attempted = saved.attempted || 0;
+      }
+      var savedText = localStorage.getItem('aac_mf_discussionText');
+      if(savedText !== null){
+        document.getElementById('discussionText').value = savedText;
       }
     }catch(e){}
   }
@@ -477,18 +533,18 @@
   }
 
   function showStep(n){
-    for(var i=1;i<=TOTAL_STEPS;i++){
-      var el = document.getElementById(i === 1 ? 'step-1' : (i === TOTAL_STEPS ? 'step-11' : 'step-mf'));
-    }
     document.getElementById('step-1').classList.remove('active');
     document.getElementById('step-mf').classList.remove('active');
     document.getElementById('step-11').classList.remove('active');
+    document.getElementById('step-12').classList.remove('active');
 
     if(n === 1){
       document.getElementById('step-1').classList.add('active');
-    } else if(n === TOTAL_STEPS){
+    } else if(n === 11){
       document.getElementById('step-11').classList.add('active');
       renderSummary();
+    } else if(n === TOTAL_STEPS){
+      document.getElementById('step-12').classList.add('active');
     } else {
       document.getElementById('step-mf').classList.add('active');
       renderMfStep(mfIndexForStep(n));
@@ -516,9 +572,40 @@
   var restartBtn = document.getElementById('restartBtn');
   if(restartBtn){
     restartBtn.addEventListener('click', function(){
-      try{ localStorage.removeItem('aac_mf_state'); }catch(e){}
+      try{
+        localStorage.removeItem('aac_mf_state');
+        localStorage.removeItem('aac_mf_discussionText');
+      }catch(e){}
       location.reload();
     });
+  }
+
+  /* ---------- Discussion: remember typed text + copy to clipboard ---------- */
+  var discussionEl = document.getElementById('discussionText');
+  discussionEl.addEventListener('input', function(){
+    try{ localStorage.setItem('aac_mf_discussionText', discussionEl.value); }catch(e){}
+  });
+
+  document.getElementById('copyBtn').addEventListener('click', function(){
+    var text = discussionEl.value;
+    var status = document.getElementById('copyStatus');
+    function showCopied(){
+      status.textContent = 'Copied! Paste it into the Canvas discussion.';
+      setTimeout(function(){ status.textContent = ''; }, 4000);
+    }
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(showCopied).catch(function(){
+        fallbackCopy(showCopied);
+      });
+    } else {
+      fallbackCopy(showCopied);
+    }
+  });
+  function fallbackCopy(cb){
+    discussionEl.focus();
+    discussionEl.select();
+    try{ document.execCommand('copy'); cb(); }
+    catch(e){ document.getElementById('copyStatus').textContent = 'Copy failed — please select the text and copy manually.'; }
   }
 
   loadState();
