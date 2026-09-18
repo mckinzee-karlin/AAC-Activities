@@ -370,7 +370,7 @@
     {
       statement: "If a student needs AAC to access their education, the district must provide it at no cost to the family.",
       answer: "fact",
-      explanation: "Under IDEA, if the IEP team determines a student needs an AAC device or service to receive a Free Appropriate Public Education, the district must provide it. It is not optional, and it cannot be billed to the family. A family may choose to use a private device at school."
+      explanation: "Under IDEA, if the IEP team determines a student needs an AAC device or service to receive a Free Appropriate Public Education, the district must provide it. It is not optional, and it cannot be billed to the family. A family may choose to use a privately owned device at school."
     },
     {
       statement: "A formal AAC evaluation is required before an IEP team can move forward with a device.",
@@ -560,7 +560,20 @@
     nextBtn.disabled = (n === TOTAL_STEPS);
     window.scrollTo(0,0);
     saveState();
+    reportHeight();
   }
+
+  /* ---------- Tell the parent page (Canvas) how tall this step actually is ---------- */
+  function reportHeight(){
+    try{
+      // slight delay lets the browser finish layout after the step swap
+      setTimeout(function(){
+        var h = document.body.scrollHeight;
+        window.parent.postMessage({ source: 'aacMythsFacts', height: h }, '*');
+      }, 30);
+    }catch(e){}
+  }
+  window.addEventListener('resize', reportHeight);
 
   document.getElementById('backBtn').addEventListener('click', function(){
     if(currentStep > 1) showStep(currentStep - 1);
